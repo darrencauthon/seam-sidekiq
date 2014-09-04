@@ -1,0 +1,1 @@
+Seam::ActiveRecord.setup
