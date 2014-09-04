@@ -39,6 +39,7 @@ gem 'spring',        group: :development
 # gem 'debugger', group: [:development, :test]
 
 gem 'seam'
+gem 'seam-active_record'
 gem 'subtle', group: [:development, :test]
 gem 'timecop', group: [:development, :test]
 gem 'contrast', group: [:development, :test]

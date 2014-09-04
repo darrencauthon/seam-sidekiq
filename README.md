@@ -1,40 +1,14 @@
-# Seam::ActiveRecord
+# Seam::Sidekiq
 
-Active Record support for seam.
+Sidekiq support for seam.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'seam-active_record'
-
-You'll also need to add the following migration script:
-
-```ruby
-class CreateSeamEfforts < ActiveRecord::Migration
-  def change
-    create_table :seam_efforts do |t|
-      t.string :effort_id
-      t.string :next_step
-      t.datetime :next_execute_at
-      t.boolean :complete
-      t.text :data
-
-      t.timestamps
-    end
-  end
-end
-```
+    gem 'seam-sidekiq'
 
 ## Usage
-
-In an initializer or some other sort of your application's setup, call
-
-```
-Seam::ActiveRecord.setup
-```
-
-Now your workflows will be run through an ActiveRecord model, ```SeamEffort```.
 
 ## Contributing
 
