@@ -14,9 +14,10 @@ describe "testing the sidekiq integration into seam" do
 
     let(:effort) do
       Struct.new(:id, :next_step, :next_execute_at)
-            .new effort_id, Object.new, next_execute_at
+            .new effort_id, next_step, next_execute_at
     end
 
+    let(:next_step)       { Object.new }
     let(:next_execute_at) { now }
 
     let(:worker) do
@@ -52,11 +53,15 @@ describe "testing the sidekiq integration into seam" do
     describe "and there is a next step to execute" do
 
       before do
-        Seam::Worker.stubs(:handler_for).with(effort.next_step).returns next_worker
+        Seam::Worker.stubs(:handler_for).with(next_step).returns next_worker
       end
 
       describe "and the next date is now" do
 
+        before do
+          effort.stubs(:next_execute_at).returns now
+        end
+
         it "should pass it to sidekiq" do
           next_worker_class.expects(:perform_async).with effort_id
           worker.perform effort_id
@@ -64,23 +69,31 @@ describe "testing the sidekiq integration into seam" do
 
       end
 
-      describe "and the next date is sometime in the future" do
+      [5.days, 4.days].each do |difference|
 
-        let(:next_execute_at) { now + 5.days }
+        describe "and the next date is sometime in the future" do
 
-        it "should pass it to sidekiq" do
-          next_worker_class.expects(:perform_in).with 5.days, effort_id
-          worker.perform effort_id
+          before do
+            effort.stubs(:next_execute_at).returns now + difference
+          end
+
+          it "should pass it to sidekiq" do
+            next_worker_class.expects(:perform_in).with difference, effort_id
+            worker.perform effort_id
+          end
         end
-      end
 
-      describe "and the next date is in the past" do
+        describe "and the next date is in the past" do
 
-        let(:next_execute_at) { now - 5.days }
+          before do
+            effort.stubs(:next_execute_at).returns now - difference
+          end
 
-        it "should pass it to sidekiq" do
-          next_worker_class.expects(:perform_async).with effort_id
-          worker.perform effort_id
+          it "should pass it to sidekiq" do
+            next_worker_class.expects(:perform_async).with effort_id
+            worker.perform effort_id
+          end
+
         end
 
       end
