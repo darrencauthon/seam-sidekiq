@@ -13,8 +13,11 @@ describe "testing the sidekiq integration into seam" do
     let(:effort_id) { Object.new }
 
     let(:effort) do
-      Struct.new(:id, :next_step).new effort_id, Object.new
+      Struct.new(:id, :next_step, :next_execute_at)
+            .new effort_id, Object.new, next_execute_at
     end
+
+    let(:next_execute_at) { now }
 
     let(:worker) do
       w = SendEmailWorker.new
@@ -24,8 +27,6 @@ describe "testing the sidekiq integration into seam" do
 
     let(:next_worker_class) do
       c = Object.new
-      c.stubs(:perform_async)
-      c.stubs(:perform_in)
       c
     end
 
@@ -35,14 +36,16 @@ describe "testing the sidekiq integration into seam" do
       w
     end
 
+    let(:now) { Time.now }
+
     before do
+      Timecop.freeze now
       Seam::Effort.stubs(:find).with(effort_id).returns effort
       Seam::Worker.stubs(:handler_for).returns nil
     end
 
     it "should look up the effort, then execute it" do
       worker.expects(:execute).with effort
-
       worker.perform effort_id
     end
 
@@ -52,10 +55,36 @@ describe "testing the sidekiq integration into seam" do
         Seam::Worker.stubs(:handler_for).with(effort.next_step).returns next_worker
       end
 
-      it "should pass it to sidekiq" do
-        next_worker_class.expects(:perform_async).with effort_id
-        worker.perform effort_id
+      describe "and the next date is now" do
+
+        it "should pass it to sidekiq" do
+          next_worker_class.expects(:perform_async).with effort_id
+          worker.perform effort_id
+        end
+
       end
+
+      describe "and the next date is sometime in the future" do
+
+        let(:next_execute_at) { now + 5.days }
+
+        it "should pass it to sidekiq" do
+          next_worker_class.expects(:perform_in).with 5.days, effort_id
+          worker.perform effort_id
+        end
+      end
+
+      describe "and the next date is in the past" do
+
+        let(:next_execute_at) { now - 5.days }
+
+        it "should pass it to sidekiq" do
+          next_worker_class.expects(:perform_async).with effort_id
+          worker.perform effort_id
+        end
+
+      end
+
     end
 
   end
