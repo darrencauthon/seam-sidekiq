@@ -50,6 +50,15 @@ describe "testing the sidekiq integration into seam" do
       worker.perform effort_id
     end
 
+    it "should execute the effort before looking up the next step" do
+      Seam::Worker.stubs(:handler_for).raises 'not yet'
+      worker.expects(:execute).with do |effort|
+        Seam::Worker.stubs(:handler_for)
+        true
+      end
+      worker.perform effort_id
+    end
+
     describe "and there is a next step to execute" do
 
       before do

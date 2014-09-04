@@ -8,6 +8,7 @@ module Seam
 
         def perform effort_id
           effort = Seam::Effort.find effort_id
+          execute effort
           next_worker = Seam::Worker.handler_for effort.next_step
           if next_worker
             if effort.next_execute_at <= Time.now
@@ -16,7 +17,6 @@ module Seam
               next_worker.class.perform_in effort.next_execute_at - Time.now, effort.id
             end
           end
-          execute effort
         end
       end
     end
