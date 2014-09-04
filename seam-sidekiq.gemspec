@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'seam/active_record/version'
+require 'seam/sidekiq/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "seam-active_record"
-  spec.version       = Seam::ActiveRecord::VERSION
+  spec.name          = "seam-sidekiq"
+  spec.version       = Seam::Sidekiq::VERSION
   spec.authors       = ["Darren Cauthon"]
   spec.email         = ["darren@cauthon.com"]
-  spec.description   = %q{Active Record support for seam}
-  spec.summary       = %q{Active Record support for seam}
+  spec.description   = %q{Sidekiq support for seam}
+  spec.summary       = %q{Sidekiq support for seam}
   spec.homepage      = ""
   spec.license       = "MIT"
 
