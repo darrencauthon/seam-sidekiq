@@ -15,13 +15,32 @@ module Seam
     end
 
     def self.fire_the_worker_for_the_next_step_of effort
-      next_worker = Seam::Worker.handler_for effort.next_step
-      return unless next_worker
-      if effort.next_execute_at <= Time.now
-        next_worker.class.perform_async effort.id
+      return unless worker = the_next_worker_for(effort)
+      if should_be_executed_in_the_future effort
+        execute_this_in_the_future worker, effort
       else
-        next_worker.class.perform_in effort.next_execute_at - Time.now, effort.id
+        execute_this_now worker, effort
       end
+    end
+
+    def self.execute_this_in_the_future worker, effort
+      worker.class.perform_in time_until(effort), effort.id
+    end
+
+    def self.execute_this_now worker, effort
+      worker.class.perform_async effort.id
+    end
+
+    def self.the_next_worker_for effort
+      Seam::Worker.handler_for effort.next_step
+    end
+
+    def self.time_until effort
+      effort.next_execute_at - Time.now
+    end
+
+    def self.should_be_executed_in_the_future effort
+      effort.next_execute_at > Time.now
     end
   end
 end
