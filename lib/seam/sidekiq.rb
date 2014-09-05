@@ -14,6 +14,15 @@ module Seam
           ::Seam::Sidekiq.fire_the_worker_for_the_next_step_of effort
         end
       end
+
+      ::Seam::Flow.class_eval do
+        alias :the_default_start_for :start
+        def start(data = {})
+          effort = the_default_start_for data
+          ::Seam::Sidekiq.fire_the_worker_for_the_next_step_of effort
+          effort
+        end
+      end
     end
 
     def self.fire_the_worker_for_the_next_step_of effort
