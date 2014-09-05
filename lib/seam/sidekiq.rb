@@ -16,11 +16,9 @@ module Seam
 
     def self.fire_the_worker_for_the_next_step_of effort
       return unless worker = the_next_worker_for(effort)
-      if should_be_executed_in_the_future effort
-        execute_this_in_the_future worker, effort
-      else
-        execute_this_now worker, effort
-      end
+      this_should_be_executed_in_the_future(effort) ?
+        execute_this_in_the_future(worker, effort) :
+        execute_this_now(worker, effort)
     end
 
     def self.execute_this_in_the_future worker, effort
@@ -39,7 +37,7 @@ module Seam
       effort.next_execute_at - Time.now
     end
 
-    def self.should_be_executed_in_the_future effort
+    def self.this_should_be_executed_in_the_future effort
       effort.next_execute_at > Time.now
     end
   end
